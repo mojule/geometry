@@ -1,6 +1,10 @@
-import { Point, createPoint } from './point'
+import { Point, point, clonePoint, addPoint, subtractPoint } from './point'
+import { is, splitOnCommaAndSpace, StringOrNumber } from './util'
 
 export type Line = [ Point, Point ]
+
+export const LINE_START = 0
+export const LINE_END = 1
 
 export const intersection = ( line1: Line, line2: Line ) : Point | undefined => {
   const [ p1, p2 ] = line1
@@ -27,14 +31,22 @@ export const intersection = ( line1: Line, line2: Line ) : Point | undefined => 
   }
 }
 
-// four numbers, four strings, two points
-export type LineArg = Point | number | string | Point[] | number[] | string[]
-
-
-export const createLine = ( ...args: LineArg[] ) : Line => {
-  if( args.length === 0 ){
-    return [ createPoint(), createPoint() ]
-  }
-
-  if( args.length === 1 )
+export const assertLine = ( l: Line ) => {
+  if( !is.line( l ) ) throw Error( 'Expected a Line' )
 }
+
+export const line = ( x1: StringOrNumber = 0, y1: StringOrNumber = 0, x2: StringOrNumber = 0, y2: StringOrNumber = 0 ): Line =>
+  [ point( x1, y1 ), point( x2, y2 ) ]
+
+export const lineFromPoints = ( start: Point, end: Point ): Line =>
+  [ clonePoint( start ), clonePoint( end ) ]
+
+export const emptyLine = (): Line => [ point(), point() ]
+
+export const cloneLine = ( l: Line ) => <Line>l.map( clonePoint )
+
+export const lineFromArray = ( arr: StringOrNumber[] ) =>
+  line( ...arr )
+
+export const lineFromString = ( str: string ) =>
+  lineFromArray( splitOnCommaAndSpace( str ) )

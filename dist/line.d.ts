@@ -1,3 +1,12 @@
 import { Point } from './point';
 export declare type Line = [Point, Point];
+export declare const LINE_START = 0;
+export declare const LINE_END = 1;
 export declare const intersection: (line1: [Point, Point], line2: [Point, Point]) => Point | undefined;
+export declare const assertLine: (l: [Point, Point]) => void;
+export declare const line: (x1?: string | number, y1?: string | number, x2?: string | number, y2?: string | number) => [Point, Point];
+export declare const lineFromPoints: (start: Point, end: Point) => [Point, Point];
+export declare const emptyLine: () => [Point, Point];
+export declare const cloneLine: (l: [Point, Point]) => [Point, Point];
+export declare const lineFromArray: (arr: (string | number)[]) => [Point, Point];
+export declare const lineFromString: (str: string) => [Point, Point];
