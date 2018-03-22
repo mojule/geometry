@@ -1,4 +1,4 @@
-import { Point, point, clonePoint, addPoint, subtractPoint } from './point'
+import { Point, point, clonePoint } from './point'
 import { is, splitOnCommaAndSpace, StringOrNumber } from './util'
 
 export type Line = [ Point, Point ]

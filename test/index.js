@@ -7,8 +7,8 @@ const lineFns = require( '../dist/line' )
 const { is } = require( '../dist/util' )
 
 const {
-  addPoint, subtractPoint, multiplyPoint, assertPoint, clonePoint, point,
-  emptyPoint, pointFromArray, pointFromString
+  translate, scale, assertPoint, clonePoint, point, emptyPoint, pointFromArray,
+  pointFromString
 } = pointFns
 
 const {
@@ -18,37 +18,28 @@ const {
 
 describe( 'geometry', () => {
   describe( 'point', () => {
-    it( 'addPoint', () => {
+    it( 'translate', () => {
       const p1 = { x: 1, y: 2 }
-      const p2 = addPoint( p1, { x: 2, y: 3 } )
-      const p3 = addPoint( p1, { x: 2 } )
-      const p4 = addPoint( p1, { y: 3 } )
+      const p2 = translate( p1, { x: 2, y: 3 } )
+      const p3 = translate( p1, { x: 2 } )
+      const p4 = translate( p1, { y: 3 } )
 
       assert.deepEqual( p2, { x: 3, y: 5 } )
       assert.deepEqual( p3, { x: 3, y: 2 } )
       assert.deepEqual( p4, { x: 1, y: 5 } )
     })
 
-    it( 'subtractPoint', () => {
+    it( 'scale', () => {
       const p1 = { x: 1, y: 2 }
-      const p2 = subtractPoint( p1, { x: 2, y: 3 } )
-      const p3 = subtractPoint( p1, { x: 2 } )
-      const p4 = subtractPoint( p1, { y: 3 } )
-
-      assert.deepEqual( p2, { x: -1, y: -1 } )
-      assert.deepEqual( p3, { x: -1, y: 2 } )
-      assert.deepEqual( p4, { x: 1, y: -1 } )
-    })
-
-    it( 'multiplyPoint', () => {
-      const p1 = { x: 1, y: 2 }
-      const p2 = multiplyPoint( p1, { x: 2, y: 3 } )
-      const p3 = multiplyPoint( p1, { x: 2 } )
-      const p4 = multiplyPoint( p1, { y: 3 } )
+      const p2 = scale( p1, { x: 2, y: 3 } )
+      const p3 = scale( p1, { x: 2 } )
+      const p4 = scale( p1, { y: 3 } )
+      const p5 = scale( p1, 2 )
 
       assert.deepEqual( p2, { x: 2, y: 6 } )
-      assert.deepEqual( p3, { x: 2, y: 0 } )
-      assert.deepEqual( p4, { x: 0, y: 6 } )
+      assert.deepEqual( p3, { x: 2, y: 2 } )
+      assert.deepEqual( p4, { x: 1, y: 6 } )
+      assert.deepEqual( p5, { x: 2, y: 4 } )
     })
 
     it( 'assertPoint', () => {

@@ -1,25 +1,39 @@
-import { is, trimAndFilter, splitOnCommaAndSpace, StringOrNumber } from './util'
+import {
+  is, trimAndFilter, splitOnCommaAndSpace, StringOrNumber
+} from './util'
 
 export interface Point {
   x: number
   y: number
 }
 
-export const addPoint = ( p1: Point, { x = 0, y = 0 } ) : Point => ({
+export interface LoosePoint {
+  x?: number,
+  y?: number
+}
+
+export type PointArg = LoosePoint | number
+
+export const translate = ( p1: Point, { x = 0, y = 0 }: LoosePoint ) : Point => ({
   x: p1.x + x,
   y: p1.y + y
 })
 
-export const subtractPoint = ( p1: Point, { x = 0, y = 0 } ) : Point => ({
-  x: p1.x - x,
-  y: p1.y - y
-})
+export const scale = ( p1: Point, by: PointArg ) : Point => {
+  if( is.number( by ) ){
+    return {
+      x: p1.x * by,
+      y: p1.y * by
+    }
+  }
 
+  const { x = 1, y = 1 } = by
 
-export const multiplyPoint = ( p1: Point, { x = 0, y = 0 } ) : Point => ({
-  x: p1.x * x,
-  y: p1.y * y
-})
+  return {
+    x: p1.x * x,
+    y: p1.y * y
+  }
+}
 
 export const assertPoint = ( p: Point ) => {
   if( !is.point( p ) ) throw Error( 'Expected a Point' )
