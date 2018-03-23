@@ -1,22 +1,22 @@
-import { Point, point, clonePoint } from './point'
+import { Point, point, clonePoint, pointFromSize } from './point'
 import { is, splitOnCommaAndSpace, StringOrNumber } from './util'
+import { Size } from './size'
+import { Rect } from './rect'
 
-export type Line = [ Point, Point ]
+export interface Line {
+  start: Point
+  end: Point
+}
 
-export const LINE_START = 0
-export const LINE_END = 1
-
-export const intersection = ( line1: Line, line2: Line ) : Point | undefined => {
-  const [ p1, p2 ] = line1
-  const [ p3, p4 ] = line2
-  const x1 = p1.x
-  const y1 = p1.y
-  const x2 = p2.x
-  const y2 = p2.y
-  const x3 = p3.x
-  const y3 = p3.y
-  const x4 = p4.x
-  const y4 = p4.y
+export const intersection = ( l1: Line, l2: Line ) : Point | undefined => {
+  const x1 = l1.start.x
+  const y1 = l1.start.y
+  const x2 = l1.end.x
+  const y2 = l1.end.y
+  const x3 = l2.start.x
+  const y3 = l2.start.y
+  const x4 = l2.end.x
+  const y4 = l2.end.y
 
   const denom = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 )
 
@@ -35,18 +35,31 @@ export const assertLine = ( l: Line ) => {
   if( !is.line( l ) ) throw Error( 'Expected a Line' )
 }
 
-export const line = ( x1: StringOrNumber = 0, y1: StringOrNumber = 0, x2: StringOrNumber = 0, y2: StringOrNumber = 0 ): Line =>
-  [ point( x1, y1 ), point( x2, y2 ) ]
+export const line = ( start: Point, end: Point ): Line =>
+  ({ start, end })
 
-export const lineFromPoints = ( start: Point, end: Point ): Line =>
-  [ clonePoint( start ), clonePoint( end ) ]
+export const lineFromValues = ( x1: StringOrNumber = 0, y1: StringOrNumber = 0, x2: StringOrNumber = 0, y2: StringOrNumber = 0 ): Line =>
+  ({
+    start: point( x1, y1 ),
+    end: point( x2, y2 )
+  })
 
-export const emptyLine = (): Line => [ point(), point() ]
+export const lineFromPoint = ( p: Point ): Line => line( point(), p )
 
-export const cloneLine = ( l: Line ) => <Line>l.map( clonePoint )
+export const emptyLine = (): Line => line( point(), point() )
+
+export const cloneLine = ( l: Line ) => ({
+  start: clonePoint( l.start ),
+  end: clonePoint( l.end )
+})
 
 export const lineFromArray = ( arr: StringOrNumber[] ) =>
-  line( ...arr )
+  lineFromValues( ...arr )
 
 export const lineFromString = ( str: string ) =>
   lineFromArray( splitOnCommaAndSpace( str ) )
+
+export const lineFromSize = ( s: Size ): Line => line( point(), pointFromSize( s ) )
+
+export const lineFromRect = ( r: Rect ) : Line =>
+  line( clonePoint( r ), point( r.width + r.x, r.height + r.y ) )

@@ -1,7 +1,7 @@
 {
   "name": "@mojule/geometry",
   "version": "0.0.1",
-  "description": "",
+  "description": "Geometry functions and types",
   "main": "index.js",
   "directories": {
     "test": "test"
