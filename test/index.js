@@ -21,6 +21,13 @@ const {
   lineFromRect
 } = Line
 
+const {
+  translateRect, scaleRect, assertRect, cloneRect, rect, emptyRect, 
+  rectFromArray, rectFromString, rectFromSize, rectFromPointAndSize, 
+  rectFromLine, rectCenter, rectFromEdges, rectToCorners, rectFromPoints,
+  rectFromPointArray, rectFromCorners
+} = Rect
+
 describe( 'geometry', () => {
   describe( 'point', () => {
     it( 'translate', () => {
@@ -262,6 +269,76 @@ describe( 'geometry', () => {
       const expect = { start: { x: 1, y: 2 }, end: { x: 3, y: 5 } }
 
       assert.deepEqual( lineFromRect( r ), expect )
+    })
+  })
+
+  describe( 'rect', () => {
+    it( 'translateRect', () => {
+      const r1 = { x: 1, y: 2, width: 3, height: 4 }
+
+      const r2 = translateRect( r1, { x: 5 } )
+      const r3 = translateRect( r1, { y: 6 } )
+      const r4 = translateRect( r1, { x: 5, y: 6 } )
+
+      const expect2 = { x: 6, y: 2, width: 3, height: 4 }
+      const expect3 = { x: 1, y: 8, width: 3, height: 4 }
+      const expect4 = { x: 6, y: 8, width: 3, height: 4 }
+
+      assert.deepEqual( r2, expect2 )
+      assert.deepEqual( r3, expect3 )
+      assert.deepEqual( r4, expect4 )
+    })
+
+    it( 'scaleRect', () => {
+      const r1 = { x: 1, y: 2, width: 3, height: 4 }
+
+      const r2 = scaleRect( r1, 5 )
+      const r3 = scaleRect( r1, { x: 6 } )
+      const r4 = scaleRect( r1, { y: 7 } )
+      const r5 = scaleRect( r1, { width: 8 } )
+      const r6 = scaleRect( r1, { height: 9 } )
+      const r7 = scaleRect( r1, { x: 6, y: 7, width: 8, height: 9 } )
+
+      const expect2 = { x: 5, y: 10, width: 15, height: 20 }
+      const expect3 = { x: 6, y: 2, width: 3, height: 4 }
+      const expect4 = { x: 1, y: 14, width: 3, height: 4 }
+      const expect5 = { x: 1, y: 2, width: 24, height: 4 }
+      const expect6 = { x: 1, y: 2, width: 3, height: 36 }
+      const expect7 = { x: 6, y: 14, width: 24, height: 36 }
+
+      assert.deepEqual( r2, expect2 )
+      assert.deepEqual( r3, expect3 )
+      assert.deepEqual( r4, expect4 )
+      assert.deepEqual( r5, expect5 )
+      assert.deepEqual( r6, expect6 )
+      assert.deepEqual( r7, expect7 )     
+    })
+
+    it( 'assertRect', () => {
+      assert.throws( () => assertRect() )
+      assert.doesNotThrow( () => assertRect( { x: 1, y: 2, width: 3, height: 4 } ) )
+    })
+
+    it( 'cloneRect', () => {
+      const r1 = { x: 1, y: 2, width: 3, height: 4 }
+      const r2 = cloneRect( r1 )
+
+      assert.deepEqual( r2, r1 )
+      assert.notStrictEqual( r2, r1 )
+    })
+
+    it( 'rect', () => {
+      const r1 = rect()
+      const r2 = rect( 1, 2, 3, 4 )
+
+      assert.deepEqual( r1, { x: 0, y: 0, width: 0, height: 0 } )
+      assert.deepEqual( r2, { x: 1, y: 2, width: 3, height: 4 } )
+    })
+
+    it( 'emptyRect', () => {
+      const r1 = emptyRect()
+
+      assert.deepEqual( r1, { x: 0, y: 0, width: 0, height: 0 } )
     })
   })
 })
