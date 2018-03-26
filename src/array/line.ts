@@ -17,3 +17,6 @@ export const intersection = ( x1: number, y1: number, x2: number, y2: number, x3
 
 export const vector = ( x1: number, y1: number, x2: number, y2: number ): Point =>
   [ x2 - x1, y2 - y1 ]
+
+export const midLine = ( x1: number, y1: number, x2: number, y2: number ): Point =>
+  [ ( x1 + x2 ) / 2, ( y1 + y2 ) / 2 ]
