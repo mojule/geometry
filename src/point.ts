@@ -1,104 +1,38 @@
-import {
-  is, trimAndFilter, splitOnCommaAndSpace, StringOrNumber
-} from './util'
+import { degreesToRadians } from "./util";
 
-import { Size } from './size'
-import { Edges } from './edge'
-import { Line } from './line';
+export type Point = [ number, number ]
 
-export interface Point {
-  x: number
-  y: number
+export const translate = ( x: number, y: number, a: number, b: number = a ) : Point =>
+  [ x + a, y + b ]
+
+export const scale = ( x: number, y: number, a: number, b: number = a ) : Point =>
+  [ x * a, y * b ]
+
+const rotateAround = ( x: number, y: number, radians: number, oX: number, oY: number ): Point => {
+  const [ sX, sY ] = scale( oX, oY, -1 )
+  const [ tX, tY ] = translate( x, y, sX, sY )
+  const [ rX, rY ] = rotateRadians( tX, tY, radians )
+
+  return translate( rX, rY, oX, oY )
 }
 
-export interface PointEdges extends Edges {
-  top: number
-  left: number
-}
+export const rotateRadians = ( x: number, y: number, radians: number, oX: number = 0, oY: number = 0 ): Point => {
+  if( oX !== 0 || oY !== 0 ) return rotateAround( x, y, radians, oX, oY )
 
-export interface LoosePoint {
-  x?: number,
-  y?: number
-}
-
-export type PointArg = LoosePoint | number
-
-export const translatePoint = ( p: Point, { x = 0, y = 0 }: LoosePoint ) : Point => ({
-  x: p.x + x,
-  y: p.y + y
-})
-
-export const scalePoint = ( p: Point, by: PointArg ) : Point => {
-  if( is.number( by ) ){
-    return {
-      x: p.x * by,
-      y: p.y * by
-    }
-  }
-
-  const { x = 1, y = 1 } = by
-
-  return {
-    x: p.x * x,
-    y: p.y * y
-  }
-}
-
-export const rotatePoint = ( p: Point, degrees: number ): Point => {
-  const radians = degrees * Math.PI / 180
   const cos = Math.cos( radians )
   const sin = Math.sin( radians )
 
-  const x = ( p.x * cos ) - ( p.y * sin )
-  const y = ( p.y * cos ) + ( p.x * sin )
+  const rX = ( x * cos ) - ( y * sin )
+  const rY = ( y * cos ) + ( x * sin )
 
-  return { x, y }
+  return [ rX, rY ]
 }
 
-export const rotateAround = ( p: Point, origin: Point, degrees: number ): Point => {
-  const translate = scalePoint( origin, -1 )
-  const translatedPoint = translatePoint( p, translate )
-  const rotatedPoint = rotatePoint( translatedPoint, degrees )
+export const rotate = ( x: number, y: number, degrees: number, oX: number = 0, oY: number = 0 ): Point =>
+  rotateRadians( x, y, degreesToRadians( degrees ), oX, oY )
 
-  return translatePoint( rotatedPoint, origin )
-}
+export const vectorRadians = ( radians: number, length: number ): Point =>
+  [ Math.cos( radians ) * length, Math.sin( radians ) * length ]
 
-export const assertPoint = ( p: Point ) => {
-  if( !is.point( p ) ) throw Error( 'Expected a Point' )
-}
-
-export const clonePoint = ( { x, y }: Point ) : Point => ({ x, y })
-
-export const point = ( x: StringOrNumber = 0, y: StringOrNumber = 0 ) : Point => {
-  x = Number( x )
-  y = Number( y )
-
-  return { x, y }
-}
-
-export const emptyPoint = () => point()
-
-export const pointFromArray = ( arr: StringOrNumber[] ) => point( ...arr )
-
-export const pointFromString = ( str: string ) =>
-  pointFromArray( splitOnCommaAndSpace( str ) )
-
-export const pointFromSize = ( s: Size ): Point => ({
-  x: s.width,
-  y: s.height
-})
-
-export const pointToEdges = ( p: Point ): PointEdges => ({
-  top: p.y,
-  left: p.x
-})
-
-export const pointFromEdges = ( e: PointEdges ) => ({
-  x: e.left,
-  y: e.top
-})
-
-export const vector = ( l: Line ) => ({
-  x: l.end.x - l.start.x,
-  y: l.end.y - l.start.y
-})
+export const vector = ( degrees: number, length: number ): Point =>
+  vectorRadians( degreesToRadians( degrees ), length )

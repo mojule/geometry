@@ -2,5 +2,6 @@
   "esversion": 6,
   "asi": true,
   "mocha": true,
-  "node": true
+  "node": true,
+  "browser": true
 }

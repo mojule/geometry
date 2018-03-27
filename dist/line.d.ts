@@ -1,0 +1,9 @@
+export declare type Line = [number, number, number, number];
+export declare const intersection: (x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) => [number, number] | undefined;
+export declare const lineVector: (x1: number, y1: number, x2: number, y2: number) => [number, number];
+export declare const midLine: (x1: number, y1: number, x2: number, y2: number) => [number, number];
+export declare const length: (x1: number, y1: number, x2: number, y2: number) => number;
+export declare const unitVector: (x1: number, y1: number, x2: number, y2: number) => [number, number];
+export declare const angleRadians: (x1: number, y1: number, x2: number, y2: number) => number;
+export declare const angle: (x1: number, y1: number, x2: number, y2: number) => number;
+export declare const bresenhamLine: (x1: number, y1: number, x2: number, y2: number) => number[];

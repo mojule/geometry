@@ -1,21 +1,23 @@
 {
   "name": "@mojule/geometry",
-  "version": "0.0.1",
-  "description": "Geometry functions and types",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "Geometry functions",
+  "main": "./dist/index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "test": "tsc && mocha",
     "coverage": "tsc && nyc --reporter=html --reporter=text mocha",
-    "build": "tsc"
+    "build": "tsc && browserify ./dist/example/index.js -o ./example/main.js --debug"
   },
   "keywords": [],
   "author": "Nik Coughlin <nrkn.com@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@mojule/h": "^0.1.10",
     "@types/node": "^9.4.7",
+    "browserify": "^16.1.1",
     "mocha": "^5.0.4",
     "nyc": "^11.6.0",
     "typescript": "^2.7.2"
