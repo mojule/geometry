@@ -1,5 +1,6 @@
 import * as geometry from '..'
 import { documentFragment, section, h1, h2, code, div } from './h'
+import { SvgElelement, svgSetAttributes, Arrow, Line, Point, Rect, Arc } from './svg'
 
 const { line, point, size, util } = geometry
 
@@ -15,21 +16,6 @@ const { rectSize, scaleSizeInSize } = size
 const {
   approximatelyEqual, radiansToDegrees, degreesToRadians, alignCenter
 } = util
-
-
-const setSvgAttributes = ( el: Element, attributes: any ) => {
-  Object.keys( attributes ).forEach( name => {
-    (<any>el).setAttributeNS( null, name, attributes[ name ] )
-  })
-
-  return el
-}
-
-const SvgEl = ( name: string, attributes: any = {} ) => {
-  const el: any = document.createElementNS( 'http://www.w3.org/2000/svg', name )
-
-  return setSvgAttributes( el, attributes )
-}
 
 const exampleSize = {
   width: 400,
@@ -51,67 +37,46 @@ const columns = exampleSize.height / cellSize.height
 
 const toCellUnit = ( value: number ) => value / cellSize.width
 
-const Line = ( x1: number, y1: number, x2: number, y2: number, stroke = '#222', strokeWidth = 2 ) =>
-  SvgEl( 'line', {
-    x1: x1 + 0.5,
-    y1: y1 + 0.5,
-    x2: x2 + 0.5,
-    y2: y2 + 0.5,
-    stroke,
-    'stroke-width': strokeWidth
-  })
-
-const Point = ( x: number, y: number, r = 4, fill = '#222' ) =>
-  SvgEl( 'circle', {
-    cx: x + 0.5,
-    cy: y + 0.5,
-    r,
-    fill
-  })
-
-const Arrow = ( id: string, fill: string ) => {
-  const marker = SvgEl( 'marker', {
-    id,
-    markerWidth: 10,
-    markerHeight: 10,
-    refX: 9,
-    refY: 3,
-    orient: 'auto',
-    markerUnits: 'strokeWidth'
-  })
-  const path = SvgEl( 'path', {
-    d: 'M0,0 L0,6 L9,3 z',
-    fill
-  })
-
-  marker.appendChild( path )
-
-  return marker
-}
-
 const Svg = ( ...childNodes: Node[] ) => {
-  const svg = SvgEl( 'svg', {
+  const svg = SvgElelement( 'svg', {
     viewBox: `0 0 ${ exampleSize.width + 2 } ${ exampleSize.height + 2 }`,
     width: exampleSize.width + 2,
     height: exampleSize.height + 2
   })
 
-  const defs = SvgEl( 'defs' )
-  const vectorArrow = Arrow( 'arrow', 'red' )
-  const lineArrow = Arrow( 'lineArrow', '#000' )
+  const defs = SvgElelement( 'defs' )
+  const vectorArrow = Arrow({ id: 'arrow', fill: 'red' })
+  const lineArrow = Arrow({ id: 'lineArrow', fill: '#000' })
+  const angleArrow = Arrow({ id: 'angleArrow', fill: '#aaa' })
 
   defs.appendChild( vectorArrow )
   defs.appendChild( lineArrow )
-
+  defs.appendChild( angleArrow )
   svg.appendChild( defs )
 
   for( let row = 0; row <= rows; row++ ){
-    const line = Line( 0, cellSize.height * row, exampleSize.width, cellSize.height * row, '#ccc', 1 )
+    const line = Line({
+      x1: 0,
+      y1: cellSize.height * row,
+      x2: exampleSize.width,
+      y2: cellSize.height * row,
+      stroke: '#ccc',
+      'stroke-width': 1,
+      'marker-end': undefined
+    })
     svg.appendChild( line )
   }
 
   for( let column = 0; column <= columns; column++ ){
-    const line = Line( cellSize.width * column, 0, cellSize.width * column, exampleSize.height, '#ccc', 1 )
+    const line = Line({
+      x1: cellSize.width * column,
+      y1: 0,
+      x2: cellSize.width * column,
+      y2: exampleSize.height,
+      stroke: '#ccc',
+      'stroke-width': 1,
+      'marker-end': undefined
+    })
 
     svg.appendChild( line )
   }
@@ -129,12 +94,6 @@ const ExampleSection = ( name: string, ...childNodes: Node[] ) => {
     )
   )
 }
-
-const SvgExample = ( name: string, ...childNodes: Node[] ) =>
-  documentFragment(
-    h2( name ),
-    Svg( ...childNodes )
-  )
 
 const Intersection = () => {
   let x1, y1, x2, y2, x3, y3, x4, y4, p
@@ -171,13 +130,13 @@ const Intersection = () => {
   }
 
   return documentFragment(
-    SvgExample(
-      'intersection( x1, y1, x2, y2, x3, y3, x4, y4 )',
-      setSvgAttributes( Line( x1, y1, x2, y2 ), { 'marker-end': 'url(#lineArrow)' } ),
-      setSvgAttributes( Line( x3, y3, x4, y4 ), { 'marker-end': 'url(#lineArrow)' } ),
-      Point( x1, y1 ),
-      Point( x3, y3 ),
-      Point( x, y, 4, 'red' )
+    h2( 'intersection( x1, y1, x2, y2, x3, y3, x4, y4 )' ),
+    Svg(
+      Line({ x1, y1, x2, y2 }),
+      Line({ x1: x3, y1: y3, x2: x4, y2: y4 }),
+      Point({ cx: x1, cy: y1 }),
+      Point({ cx: x3, cy: y3 }),
+      Point({ cx: x, cy: y, fill: 'red' })
     ),
     div(
       code(
@@ -189,12 +148,11 @@ const Intersection = () => {
         `[ ${ toCellUnit( x ) }, ${ toCellUnit( y ) } ]`
       )
     ),
-    SvgExample(
-      'intersection( x1, y1, x2, y2, x3, y3, x4, y4 )',
-      setSvgAttributes( Line( fx1, fy1, fx2, fy2 ), { 'marker-end': 'url(#lineArrow)' } ),
-      setSvgAttributes( Line( fx3, fy3, fx4, fy4 ), { 'marker-end': 'url(#lineArrow)' } ),
-      Point( fx1, fy1 ),
-      Point( fx3, fy3 )
+    Svg(
+      Line({ x1: fx1, y1: fy1, x2: fx2, y2: fy2 }),
+      Line({ x1: fx3, y1: fy3, x2: fx4, y2: fy4 }),
+      Point({ cx: fx1, cy: fy1 }),
+      Point({ cx: fx3, cy: fy3 })
     ),
     div(
       code(
@@ -218,19 +176,13 @@ const LineVector = () => {
   const p = lineVector( x1, y1, x2, y2 )
   const [ x, y ] = p
 
-  const vector = Line( 0, 0, x, y, 'red' )
-
-  setSvgAttributes( vector, {
-    'marker-end': 'url(#arrow)'
-  })
-
   return documentFragment(
-    SvgExample(
-      'lineVector( x1, y1, x2, y2 )',
-      Point( x1, y1 ),
-      setSvgAttributes( Line( x1, y1, x2, y2 ), { 'marker-end': 'url(#lineArrow)' } ),
-      Point( 0, 0, 4, 'red' ),
-      vector
+    h2( 'lineVector( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Line({ x1, y1, x2, y2 }),
+      Point({ cx: 0, cy: 0, fill: 'red' }),
+      Line({ x1: 0, y1: 0, x2: x, y2: y, stroke: 'red', 'marker-end': 'url(#arrow)' })
     ),
     div(
       code(
@@ -255,11 +207,11 @@ const MidLine = () => {
   const [ x, y ] = p
 
   return documentFragment(
-    SvgExample(
-      'midLine( x1, y1, x2, y2 )',
-      Point( x1, y1 ),
-      setSvgAttributes( Line( x1, y1, x2, y2 ), { 'marker-end': 'url(#lineArrow)' } ),
-      Point( x, y, 4, 'red' )
+    h2( 'midLine( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Line({ x1, y1, x2, y2 }),
+      Point({ cx: x, cy: y, fill: 'red' })
     ),
     div(
       code(
@@ -283,10 +235,10 @@ const Length = () => {
   const l = length( x1, y1, x2, y2 )
 
   return documentFragment(
-    SvgExample(
-      'length( x1, y1, x2, y2 )',
-      Point( x1, y1 ),
-      setSvgAttributes( Line( x1, y1, x2, y2 ), { 'marker-end': 'url(#lineArrow)' } )
+    h2( 'length( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Line({ x1, y1, x2, y2 })
     ),
     div(
       code(
@@ -313,19 +265,14 @@ const UnitVector = () => {
   const s = scale( x, y, cellSize.width )
   const [ sX, sY ] = s
 
-  const vector = Line( 0, 0, sX , sY, 'red' )
-
-  setSvgAttributes( vector, {
-    'marker-end': 'url(#arrow)'
-  })
 
   return documentFragment(
-    SvgExample(
-      'unitVector( x1, y1, x2, y2 )',
-      Point( x1, y1 ),
-      setSvgAttributes( Line( x1, y1, x2, y2 ), { 'marker-end': 'url(#lineArrow)' } ),
-      Point( 0, 0, 4, 'red' ),
-      vector
+    h2( 'unitVector( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Line({ x1, y1, x2, y2 }),
+      Point({ cx: 0, cy: 0, fill: 'red' }),
+      Line({ x1: 0, y1: 0, x2: sX , y2: sY, stroke: 'red', 'marker-end': 'url(#arrow)' })
     ),
     div(
       code(
@@ -348,17 +295,11 @@ const Angle = () => {
 
   const a = angle( x1, y1, x2, y2 )
 
-  const line = Line( x1, y1, x2, y2 )
-
-  setSvgAttributes( line, {
-    'marker-end': 'url(#lineArrow)'
-  })
-
   return documentFragment(
-    SvgExample(
-      'angle( x1, y1, x2, y2 )',
-      Point( x1, y1 ),
-      line
+    h2( 'angle( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Line({ x1, y1, x2, y2 })
     ),
     div(
       code(
@@ -387,14 +328,11 @@ const BresenhamLine = () => {
     const x = l[ i * 2 ]
     const y = l[ i * 2 + 1 ]
 
-    const rect = SvgEl( 'rect', {
-      x: x * cellSize.width + 0.5,
-      y: y * cellSize.height + 0.5,
+    const rect = Rect({
+      x: x * cellSize.width,
+      y: y * cellSize.height,
       width: cellSize.width,
-      height: cellSize.height,
-      'stroke-width': 1,
-      stroke: '#222',
-      fill: '#ccc'
+      height: cellSize.height
     })
 
     rects.push( rect )
@@ -405,15 +343,13 @@ const BresenhamLine = () => {
   const lx2 = ( x2 + 1 ) * cellSize.width - ( cellSize.width / 2 )
   const ly2 = ( y2 + 1 ) * cellSize.height - ( cellSize.height / 2 )
 
-  const svgEx = SvgExample(
-    'bresenhamLine( x1, y1, x2, y2 )',
-    ...rects,
-    Point( lx1, ly1 ),
-    setSvgAttributes( Line( lx1, ly1, lx2, ly2 ), { 'marker-end': 'url(#lineArrow)' } ),
-  )
-
   return documentFragment(
-    svgEx,
+    h2( 'bresenhamLine( x1, y1, x2, y2 )' ),
+    Svg(
+      ...rects,
+      Point({ cx: lx1, cy: ly1 }),
+      Line({ x1: lx1, y1: ly1, x2: lx2, y2: ly2 })
+    ),
     div(
       code(
         `bresenhamLine( ${ [ x1, y1, x2, y2 ].join( ', ' ) } )`,
@@ -422,6 +358,175 @@ const BresenhamLine = () => {
     div(
       code(
         `[ ${ l.join( ', ' ) } ]`
+      )
+    )
+  )
+}
+
+const Translate = () => {
+  const x1 = Math.floor( Math.random() * exampleCenter.x )
+  const y1 = Math.floor( Math.random() * exampleCenter.y )
+  const t = Math.floor( Math.random() * exampleCenter.x )
+  const x2 = Math.floor( Math.random() * exampleCenter.x )
+  const y2 = Math.floor( Math.random() * exampleCenter.y )
+
+  const [ tx1, ty1 ] = translate( x1, y1, t )
+  const [ tx2, ty2 ] = translate( x1, y1, x2, y2 )
+
+  return documentFragment(
+    h2( 'translate( x, y, t )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Point({ cx: tx1, cy: ty1, fill: 'red' })
+    ),
+    div(
+      code(
+        `translate( ${ [ x1, y1, t ].map( toCellUnit ).join( ', ' ) } )`,
+      )
+    ),
+    div(
+      code(
+        `[ ${ [ tx1, ty1 ].map( toCellUnit ).join( ', ' ) } ]`
+      )
+    ),
+    h2( 'translate( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Point({ cx: tx2, cy: ty2, fill: 'red' })
+    ),
+    div(
+      code(
+        `translate( ${ [ x1, y1, x2, y2 ].map( toCellUnit ).join( ', ' ) } )`,
+      )
+    ),
+    div(
+      code(
+        `[ ${ [ tx2, ty2 ].map( toCellUnit ).join( ', ' ) } ]`
+      )
+    )
+  )
+}
+
+const Scale = () => {
+  const x1 = Math.floor( Math.random() * exampleCenter.x )
+  const y1 = Math.floor( Math.random() * exampleCenter.y )
+  const s = Math.random() * 2
+  const x2 = Math.random() * 2
+  const y2 = Math.random() * 2
+
+  const [ sx1, sy1 ] = scale( x1, y1, s )
+  const [ sx2, sy2 ] = scale( x1, y1, x2, y2 )
+
+  return documentFragment(
+    h2( 'scale( x, y, t )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Point({ cx: sx1, cy: sy1, fill: 'red' })
+    ),
+    div(
+      code(
+        `scale( ${ [ x1, y1 ].map( toCellUnit ).join( ', ' ) }, ${ s } )`
+      )
+    ),
+    div(
+      code(
+        `[ ${ [ sx1, sy1 ].map( toCellUnit ).join( ', ' ) } ]`
+      )
+    ),
+    h2( 'scale( x1, y1, x2, y2 )' ),
+    Svg(
+      Point({ cx: x1, cy: y1 }),
+      Point({ cx: sx2, cy: sy2, fill: 'red' })
+    ),
+    div(
+      code(
+        `scale( ${ [ x1, y1 ].map( toCellUnit ).join( ', ' ) }, ${ [ x2, y2 ].join( ', ' ) } )`
+      )
+    ),
+    div(
+      code(
+        `[ ${ [ sx2, sy2 ].map( toCellUnit ).join( ', ' ) } ]`
+      )
+    )
+  )
+}
+
+const Rotate = () => {
+  let x1, y1, d1
+  let [ rx1, ry1 ] = [ -1, -1 ]
+
+  while( rx1 < 0 || rx1 > exampleSize.width || ry1 < 0 || ry1 > exampleSize.height ){
+    x1 = Math.floor( Math.random() * exampleSize.width )
+    y1 = Math.floor( Math.random() * exampleSize.height )
+    d1 = Math.random() * 360 - 180
+    const r = rotate( x1, y1, d1 )
+    rx1 = r[ 0 ]
+    ry1 = r[ 1 ]
+  }
+
+  const a1 = angle( 0, 0, x1, y1 )
+  const ra1 = angle( 0, 0, rx1, ry1 )
+
+  let x2, y2, d2, oX, oY
+  let [ rx2, ry2 ] = [ -1, -1 ]
+
+  while( rx2 < 0 || rx2 > exampleSize.width || ry2 < 0 || ry2 > exampleSize.height ){
+    x2 = Math.floor( Math.random() * exampleSize.width )
+    y2 = Math.floor( Math.random() * exampleSize.height )
+    d2 = Math.random() * 360 - 180
+    oX = Math.floor( Math.random() * exampleSize.width )
+    oY = Math.floor( Math.random() * exampleSize.height )
+    const r = rotate( x2, y2, d2, oX, oY )
+    rx2 = r[ 0 ]
+    ry2 = r[ 1 ]
+  }
+
+  const a2 = angle( oX, oY, x2, y2 )
+  const ra2 = angle( oX, oY, rx2, ry2 )
+
+  return documentFragment(
+    h2( 'rotate( x, y, degrees )' ),
+    Svg(
+      Point({ cx: 0, cy: 0, fill: '#aaa' }),
+      Line({ x1: 0, y1: 0, x2: x1, y2: y1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' } ),
+
+      Point({ cx: x1, cy: y1 }),
+      Line({ x1: 0, y1: 0, x2: rx1, y2: ry1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' } ),
+
+      Arc({ cx: 0, cy: 0, r: cellSize.width, startDegrees: a1, endDegrees: ra1, stroke: '#aaa' }),
+
+      Point({ cx: rx1, cy: ry1, fill: 'red' }),
+    ),
+    div(
+      code(
+        `rotate( ${ [ x1, y1 ].map( toCellUnit ).join( ', ' ) }, ${ d1 } )`
+      )
+    ),
+    div(
+      code(
+        `[ ${ [ rx1, ry1 ].map( toCellUnit ).join( ', ' ) } ]`
+      )
+    ),
+    h2( 'rotate( x, y, degrees, oX, oY )' ),
+    Svg(
+      Point({ cx: oX, cy: oY, fill: '#aaa' }),
+      Line({ x1: oX, y1: oY, x2, y2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' } ),
+
+      Point({ cx: x2, cy: y2 }),
+      Line({ x1: oX, y1: oY, x2: rx2, y2: ry2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' } ),
+
+      Arc({ cx: oX, cy: oY, r: cellSize.width, startDegrees: a2, endDegrees: ra2, stroke: '#aaa' }),
+
+      Point({ cx: rx2, cy: ry2, fill: 'red' })
+    ),
+    div(
+      code(
+        `rotate( ${ [ x2, y2 ].map( toCellUnit ).join( ', ' ) }, ${ d2 }, ${ [ oX, oY ].map( toCellUnit ).join( ', ' ) } )`
+      )
+    ),
+    div(
+      code(
+        `[ ${ [ rx2, ry2 ].map( toCellUnit ).join( ', ' ) } ]`
       )
     )
   )
@@ -438,7 +543,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
     Angle(),
     BresenhamLine()
   )
-  const pointExamples = ExampleSection( 'point' )
+
+  const pointExamples = ExampleSection(
+    'point',
+    Translate(),
+    Scale(),
+    Rotate()
+  )
+
   const sizeExamples = ExampleSection( 'size' )
   const utilsExamples = ExampleSection( 'utils' )
 
