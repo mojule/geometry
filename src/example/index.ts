@@ -1,5 +1,9 @@
 import * as geometry from '..'
-import { documentFragment, section, h1, h2, code, div } from './h'
+
+import {
+  documentFragment, section, h1, h2, code, div, label, input
+} from './h'
+
 import { SvgElelement, svgSetAttributes, Arrow, Line, Point, Rect, Arc } from './svg'
 
 const { line, point, size, util } = geometry
@@ -464,9 +468,6 @@ const Rotate = () => {
     ry1 = r[ 1 ]
   }
 
-  const a1 = angle( 0, 0, x1, y1 )
-  const ra1 = angle( 0, 0, rx1, ry1 )
-
   let x2, y2, d2, oX, oY
   let [ rx2, ry2 ] = [ -1, -1 ]
 
@@ -481,9 +482,6 @@ const Rotate = () => {
     ry2 = r[ 1 ]
   }
 
-  const a2 = angle( oX, oY, x2, y2 )
-  const ra2 = angle( oX, oY, rx2, ry2 )
-
   return documentFragment(
     h2( 'rotate( x, y, degrees )' ),
     Svg(
@@ -492,8 +490,6 @@ const Rotate = () => {
 
       Point({ cx: x1, cy: y1 }),
       Line({ x1: 0, y1: 0, x2: rx1, y2: ry1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' } ),
-
-      Arc({ cx: 0, cy: 0, r: cellSize.width, startDegrees: a1, endDegrees: ra1, stroke: '#aaa' }),
 
       Point({ cx: rx1, cy: ry1, fill: 'red' }),
     ),
@@ -515,8 +511,6 @@ const Rotate = () => {
       Point({ cx: x2, cy: y2 }),
       Line({ x1: oX, y1: oY, x2: rx2, y2: ry2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' } ),
 
-      Arc({ cx: oX, cy: oY, r: cellSize.width, startDegrees: a2, endDegrees: ra2, stroke: '#aaa' }),
-
       Point({ cx: rx2, cy: ry2, fill: 'red' })
     ),
     div(
@@ -529,6 +523,67 @@ const Rotate = () => {
         `[ ${ [ rx2, ry2 ].map( toCellUnit ).join( ', ' ) } ]`
       )
     )
+  )
+}
+
+const ArcTest = () => {
+  const polarToCartesian = ( cx, cy, r, degrees ) => {
+    const radians = degreesToRadians( degrees )
+    const x = cx + ( r * Math.cos( radians ) )
+    const y = cy + ( r * Math.sin( radians ) )
+
+    return [ x, y ]
+  }
+
+  const arcPath = ({ cx, cy, r, start, end }) => {
+    const [ x1, y1 ] = polarToCartesian( cx, cy, r, end )
+    const [ x2, y2 ] = polarToCartesian( cx, cy, r, start )
+    const largeArcFlag = end - start <= 180 ? 0 : 1
+
+    const d = [ 'M', x1, y1, 'A', r, r, 0, largeArcFlag, 0, x2, y2 ].join( ' ' )
+
+    return d
+  }
+
+  const options = {
+    cx: exampleCenter.x,
+    cy: exampleCenter.y,
+    r: exampleCenter.x / 2,
+    start: 0,
+    end: 90
+  }
+
+  const arc = SvgElelement( 'path', {
+    fill: 'none',
+    'stroke-width': 2,
+    stroke: '#000',
+    d: arcPath( options )
+  })
+
+  const update = () => {
+    (<any>arc).setAttributeNS( null, 'd', arcPath( options ) )
+  }
+
+  const inputs = Object.keys( options ).map( key => {
+    const editor = input(
+      {
+        type: 'number',
+        value: String( options[ key ] )
+      }
+    )
+
+    editor.addEventListener( 'change', () => {
+      options[ key ] = editor.valueAsNumber
+      update()
+    })
+
+    return div( label( editor, key ) )
+  })
+
+  return documentFragment(
+    h2( 'arc test' ),
+    Svg( arc ),
+    ...inputs
   )
 }
 
@@ -555,6 +610,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
   const utilsExamples = ExampleSection( 'utils' )
 
   const examples = documentFragment(
+    ArcTest(),
     lineExamples, pointExamples, sizeExamples, utilsExamples
   )
 

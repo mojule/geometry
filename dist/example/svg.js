@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = require("../util");
 exports.svgSetAttributes = (el, attributes) => {
     Object.keys(attributes).forEach(name => {
         el.setAttributeNS(null, name, attributes[name]);
@@ -81,31 +80,23 @@ exports.Rect = (attributes = {}) => {
     Object.assign(attributes, { x, y });
     return exports.SvgElelement('rect', attributes);
 };
-const polarToCartesian = (cx, cy, r, degrees) => {
-    var radians = util_1.degreesToRadians(degrees);
-    const x = cx + (r * Math.cos(radians));
-    const y = cy + (r * Math.sin(radians));
-    return [x, y];
-};
 const arcDefaults = {
-    cx: 0,
-    cy: 0,
-    r: 4,
-    startDegrees: 0,
-    endDegrees: 0,
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 0,
+    r: 0,
+    sweep: 0,
     'stroke-width': 2,
     stroke: '#222',
     fill: 'none'
 };
 exports.Arc = (options = {}) => {
     options = Object.assign({}, arcDefaults, options);
-    const { cx, cy, r, startDegrees, endDegrees } = options;
-    const start = polarToCartesian(cx, cy, r, startDegrees);
-    const end = polarToCartesian(cx, cy, r, endDegrees);
-    const arcSweep = endDegrees - startDegrees <= 180 ? 0 : 1;
+    const { x1, y1, x2, y2, r, sweep } = options;
     const d = [
-        'M', ...start,
-        'A', r, r, 0, arcSweep, 0, ...end
+        'M', x1, y1,
+        'A', r, r, 0, sweep, 0, x2, y2
     ].join(' ');
     const attributes = {
         stroke: options.stroke,

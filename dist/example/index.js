@@ -197,8 +197,6 @@ const Rotate = () => {
         rx1 = r[0];
         ry1 = r[1];
     }
-    const a1 = angle(0, 0, x1, y1);
-    const ra1 = angle(0, 0, rx1, ry1);
     let x2, y2, d2, oX, oY;
     let [rx2, ry2] = [-1, -1];
     while (rx2 < 0 || rx2 > exampleSize.width || ry2 < 0 || ry2 > exampleSize.height) {
@@ -211,16 +209,57 @@ const Rotate = () => {
         rx2 = r[0];
         ry2 = r[1];
     }
-    const a2 = angle(oX, oY, x2, y2);
-    const ra2 = angle(oX, oY, rx2, ry2);
-    return h_1.documentFragment(h_1.h2('rotate( x, y, degrees )'), Svg(svg_1.Point({ cx: 0, cy: 0, fill: '#aaa' }), svg_1.Line({ x1: 0, y1: 0, x2: x1, y2: y1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Point({ cx: x1, cy: y1 }), svg_1.Line({ x1: 0, y1: 0, x2: rx1, y2: ry1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Arc({ cx: 0, cy: 0, r: cellSize.width, startDegrees: a1, endDegrees: ra1, stroke: '#aaa' }), svg_1.Point({ cx: rx1, cy: ry1, fill: 'red' })), h_1.div(h_1.code(`rotate( ${[x1, y1].map(toCellUnit).join(', ')}, ${d1} )`)), h_1.div(h_1.code(`[ ${[rx1, ry1].map(toCellUnit).join(', ')} ]`)), h_1.h2('rotate( x, y, degrees, oX, oY )'), Svg(svg_1.Point({ cx: oX, cy: oY, fill: '#aaa' }), svg_1.Line({ x1: oX, y1: oY, x2, y2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Point({ cx: x2, cy: y2 }), svg_1.Line({ x1: oX, y1: oY, x2: rx2, y2: ry2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Arc({ cx: oX, cy: oY, r: cellSize.width, startDegrees: a2, endDegrees: ra2, stroke: '#aaa' }), svg_1.Point({ cx: rx2, cy: ry2, fill: 'red' })), h_1.div(h_1.code(`rotate( ${[x2, y2].map(toCellUnit).join(', ')}, ${d2}, ${[oX, oY].map(toCellUnit).join(', ')} )`)), h_1.div(h_1.code(`[ ${[rx2, ry2].map(toCellUnit).join(', ')} ]`)));
+    return h_1.documentFragment(h_1.h2('rotate( x, y, degrees )'), Svg(svg_1.Point({ cx: 0, cy: 0, fill: '#aaa' }), svg_1.Line({ x1: 0, y1: 0, x2: x1, y2: y1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Point({ cx: x1, cy: y1 }), svg_1.Line({ x1: 0, y1: 0, x2: rx1, y2: ry1, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Point({ cx: rx1, cy: ry1, fill: 'red' })), h_1.div(h_1.code(`rotate( ${[x1, y1].map(toCellUnit).join(', ')}, ${d1} )`)), h_1.div(h_1.code(`[ ${[rx1, ry1].map(toCellUnit).join(', ')} ]`)), h_1.h2('rotate( x, y, degrees, oX, oY )'), Svg(svg_1.Point({ cx: oX, cy: oY, fill: '#aaa' }), svg_1.Line({ x1: oX, y1: oY, x2, y2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Point({ cx: x2, cy: y2 }), svg_1.Line({ x1: oX, y1: oY, x2: rx2, y2: ry2, stroke: '#aaa', 'marker-end': 'url(#angleArrow)' }), svg_1.Point({ cx: rx2, cy: ry2, fill: 'red' })), h_1.div(h_1.code(`rotate( ${[x2, y2].map(toCellUnit).join(', ')}, ${d2}, ${[oX, oY].map(toCellUnit).join(', ')} )`)), h_1.div(h_1.code(`[ ${[rx2, ry2].map(toCellUnit).join(', ')} ]`)));
+};
+const ArcTest = () => {
+    const polarToCartesian = (cx, cy, r, degrees) => {
+        const radians = degreesToRadians(degrees);
+        const x = cx + (r * Math.cos(radians));
+        const y = cy + (r * Math.sin(radians));
+        return [x, y];
+    };
+    const arcPath = ({ cx, cy, r, start, end }) => {
+        const [x1, y1] = polarToCartesian(cx, cy, r, end);
+        const [x2, y2] = polarToCartesian(cx, cy, r, start);
+        const arcSweep = end - start <= 180 ? 0 : 1;
+        const d = ['M', x1, y1, 'A', r, r, 0, arcSweep, 0, x2, y2].join(' ');
+        return d;
+    };
+    const options = {
+        cx: exampleCenter.x,
+        cy: exampleCenter.y,
+        r: exampleCenter.x / 2,
+        start: 0,
+        end: 90
+    };
+    const arc = svg_1.SvgElelement('path', {
+        fill: 'none',
+        'stroke-width': 2,
+        stroke: '#000',
+        d: arcPath(options)
+    });
+    const update = () => {
+        arc.setAttributeNS(null, 'd', arcPath(options));
+    };
+    const inputs = Object.keys(options).map(key => {
+        const editor = h_1.input({
+            type: 'number',
+            value: String(options[key])
+        });
+        editor.addEventListener('change', () => {
+            options[key] = editor.valueAsNumber;
+            update();
+        });
+        return h_1.div(h_1.label(editor, key));
+    });
+    return h_1.documentFragment(h_1.h2('arc test'), Svg(arc), ...inputs);
 };
 document.addEventListener('DOMContentLoaded', () => {
     const lineExamples = ExampleSection('line', Intersection(), LineVector(), MidLine(), Length(), UnitVector(), Angle(), BresenhamLine());
     const pointExamples = ExampleSection('point', Translate(), Scale(), Rotate());
     const sizeExamples = ExampleSection('size');
     const utilsExamples = ExampleSection('utils');
-    const examples = h_1.documentFragment(lineExamples, pointExamples, sizeExamples, utilsExamples);
+    const examples = h_1.documentFragment(ArcTest(), lineExamples, pointExamples, sizeExamples, utilsExamples);
     document.body.appendChild(examples);
 });
 //# sourceMappingURL=index.js.map

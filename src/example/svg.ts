@@ -108,21 +108,13 @@ export const Rect = ( attributes: any = {} ) => {
   return SvgElelement( 'rect', attributes )
 }
 
-const polarToCartesian = ( cx, cy, r, degrees ) => {
-  var radians = degreesToRadians( degrees )
-
-  const x = cx + ( r * Math.cos( radians ) )
-  const y = cy + ( r * Math.sin( radians ) )
-
-  return [ x, y ]
-}
-
 const arcDefaults = {
-  cx: 0,
-  cy: 0,
-  r: 4,
-  startDegrees: 0,
-  endDegrees: 0,
+  x1: 0,
+  y1: 0,
+  x2: 0,
+  y2: 0,
+  r: 0,
+  sweep: 0,
   'stroke-width': 2,
   stroke: '#222',
   fill: 'none'
@@ -131,16 +123,11 @@ const arcDefaults = {
 export const Arc = ( options: any = {} ) => {
   options = Object.assign( {}, arcDefaults, options )
 
-  const { cx, cy, r, startDegrees, endDegrees } = options
-
-  const start = polarToCartesian( cx, cy, r, startDegrees )
-  const end = polarToCartesian( cx, cy, r, endDegrees )
-
-  const arcSweep = endDegrees - startDegrees <= 180 ? 0 : 1
+  const { x1, y1, x2, y2, r, sweep } = options
 
   const d = [
-    'M', ...start,
-    'A', r, r, 0, arcSweep, 0, ...end
+    'M', x1, y1,
+    'A', r, r, 0, sweep, 0, x2, y2
   ].join( ' ' )
 
   const attributes = {
